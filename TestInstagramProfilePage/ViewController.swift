@@ -17,7 +17,7 @@ class ViewController: UIViewController {
     
     private let bag = DisposeBag()
     
-    private let contentVCs = Array(1...5).map { _ in TableViewController() }
+    private let contentVCs = Array(0...30).map { _ in TableViewController() }
     
     private lazy var headerView: UIView = {
         let v = UIView()
@@ -60,6 +60,8 @@ class ViewController: UIViewController {
         return sv
     }()
     
+    private lazy var prevs: [CGPoint] = contentVCs.map { _ in CGPoint(x: 0, y: -250.0) }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "alexhuangtung"
@@ -74,35 +76,7 @@ class ViewController: UIViewController {
             $0.top.left.right.equalToSuperview()
             $0.height.equalTo(250)
         }
-        
-        Observable
-            .merge(contentVCs.map { $0.tableView.rx.didScroll.asObservable() })
-            .subscribe(onNext: view.setNeedsUpdateConstraints)
-            .disposed(by: bag)
-        
-        Array(0 ..< contentVCs.count)
-            .forEach { index in
-                Observable<CGPoint>
-                    .merge(
-                        contentVCs.enumerated()
-                            .filter { $0.0 != index }
-                            .map { $0.1.tableView.rx.contentOffset.asObservable() }
-                    )
-                    .startWith(.zero)
-                    .pairwise()
-                    .filter { prev, _ -> Bool in
-                        prev.y < -50.0
-                    }
-                    .map { _, curr -> CGPoint in
-                        if curr.y <= -50.0 {
-                            return curr
-                        } else {
-                            return curr.with { $0.y = -50.0 }
-                        }
-                    }
-                    .bind(to: contentVCs[index].tableView.rx.contentOffset)
-                    .disposed(by: bag)
-        }
+        contentVCs.forEach { $0.tableView.delegate = self }
     }
     
     var currentContentIndex: Int {
@@ -123,4 +97,29 @@ class ViewController: UIViewController {
         super.updateViewConstraints()
     }
     
+}
+
+extension ViewController: UITableViewDelegate {
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        view.setNeedsUpdateConstraints()
+        let index = currentContentIndex
+        let prev = prevs[index]
+        let curr = scrollView.contentOffset
+        prevs[index] = curr
+        guard prev.y < -50.0 else { return }
+        
+        let new: CGPoint = {
+            if curr.y <= -50.0 {
+                return curr
+            } else {
+                return curr.with { $0.y = -50.0 }
+            }
+        }()
+        contentVCs
+            .enumerated()
+            .filter { $0.0 != index }
+            .forEach {
+                $0.1.tableView.contentOffset = new
+        }
+    }
 }
