@@ -42,7 +42,7 @@ class TableViewController: UIViewController {
             height: refreshControl.bounds.size.height
         )
         let dataSource = RxTableViewSectionedReloadDataSource<FooSectionModel>(configureCell: { ds, tv, ip, data -> UITableViewCell in
-            if ip.row < 2 {
+            if ip.row < 1 {
                 let cell: OfficialLiveCell = tv.dequeueReusableCell(for: ip)
                 cell.backgroundColor = .randomDark
                 cell.textLabel?.text = data.description
