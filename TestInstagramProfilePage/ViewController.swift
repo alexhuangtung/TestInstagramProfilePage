@@ -60,7 +60,7 @@ class ViewController: UIViewController {
         return sv
     }()
     
-    private lazy var prevs: [CGPoint] = contentVCs.map { _ in CGPoint(x: 0, y: -250.0) }
+    private lazy var prevs: [CGPoint] = contentVCs.map { _ in CGPoint(x: 0, y: -50.0) }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -109,7 +109,7 @@ extension ViewController: UITableViewDelegate {
         guard prev.y < -50.0 else { return }
         
         let new: CGPoint = {
-            if curr.y <= -50.0 {
+            if curr.y < -50.0 {
                 return curr
             } else {
                 return curr.with { $0.y = -50.0 }

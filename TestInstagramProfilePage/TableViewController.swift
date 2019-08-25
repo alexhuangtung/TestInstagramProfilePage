@@ -67,7 +67,7 @@ class TableViewController: UIViewController {
         
         Driver<[FooSectionModel]>
             .just(
-                [FooSectionModel(model: "Live", items: Array(1...10))]
+                [FooSectionModel(model: "Live", items: Array(1...Int.random(in: 20...50)))]
             )
             .drive(tableView.rx.items(dataSource: dataSource))
             .disposed(by: bag)
