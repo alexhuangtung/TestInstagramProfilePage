@@ -16,7 +16,7 @@ class TableViewController: UIViewController {
     
     private let refreshControl = UIRefreshControl()
 
-    private lazy var tableView: UITableView = {
+    private(set) lazy var tableView: UITableView = {
         let tv = UITableView()
         tv.register(cellClass: OfficialLiveCell.self)
         tv.register(cellClass: GeneralLiveCell.self)
