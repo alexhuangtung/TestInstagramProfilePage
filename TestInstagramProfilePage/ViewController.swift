@@ -9,6 +9,8 @@
 import RxSwift
 import RxCocoa
 import RxDataSources
+import RxSwiftExt
+import Then
 import UIKit
 
 class ViewController: UIViewController {
@@ -72,6 +74,53 @@ class ViewController: UIViewController {
             $0.top.left.right.equalToSuperview()
             $0.height.equalTo(250)
         }
+        
+        Observable
+            .merge(contentVCs.map { $0.tableView.rx.didScroll.asObservable() })
+            .subscribe(onNext: view.setNeedsUpdateConstraints)
+            .disposed(by: bag)
+        
+        Array(0 ..< contentVCs.count)
+            .forEach { index in
+                Observable<CGPoint>
+                    .merge(
+                        contentVCs.enumerated()
+                            .filter { $0.0 != index }
+                            .map { $0.1.tableView.rx.contentOffset.asObservable() }
+                    )
+                    .startWith(.zero)
+                    .pairwise()
+                    .filter { prev, _ -> Bool in
+                        prev.y < -50.0
+                    }
+                    .map { _, curr -> CGPoint in
+                        if curr.y <= -50.0 {
+                            return curr
+                        } else {
+                            return curr.with { $0.y = -50.0 }
+                        }
+                    }
+                    .bind(to: contentVCs[index].tableView.rx.contentOffset)
+                    .disposed(by: bag)
+        }
+    }
+    
+    var currentContentIndex: Int {
+        return Int(contentScrollView.contentOffset.x) / Int(contentScrollView.bounds.width)
+    }
+    
+    override func updateViewConstraints() {
+        guard contentScrollView.bounds.width != 0 else {
+            super.updateViewConstraints()
+            return
+        }
+        
+        let y = contentVCs[currentContentIndex].tableView.contentOffset.y
+        let offset = max(-200, -y - 250)
+        headerView.snp.updateConstraints {
+            $0.top.equalToSuperview().inset(offset)
+        }
+        super.updateViewConstraints()
     }
     
 }
