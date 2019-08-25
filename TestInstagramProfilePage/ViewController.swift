@@ -17,6 +17,23 @@ class ViewController: UIViewController {
     
     private let contentVCs = Array(1...5).map { _ in TableViewController() }
     
+    private lazy var headerView: UIView = {
+        let v = UIView()
+        v.backgroundColor = .yellow
+        v.addSubview(categoryView)
+        categoryView.snp.makeConstraints {
+            $0.bottom.left.right.equalToSuperview()
+            $0.height.equalTo(50)
+        }
+        return v
+    }()
+    
+    private let categoryView: UIView = {
+        let v = UIView()
+        v.backgroundColor = .cyan
+        return v
+    }()
+    
     private lazy var contentScrollView: UIScrollView = {
         let sv = UIScrollView(frame: .zero)
         sv.bounces = true
@@ -47,8 +64,13 @@ class ViewController: UIViewController {
         navigationController?.navigationBar.isTranslucent = false
         view.backgroundColor = .white
         view.addSubview(contentScrollView)
+        view.addSubview(headerView)
         contentScrollView.snp.makeConstraints {
             $0.edges.equalToSuperview()
+        }
+        headerView.snp.makeConstraints {
+            $0.top.left.right.equalToSuperview()
+            $0.height.equalTo(250)
         }
     }
     
